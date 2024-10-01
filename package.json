@@ -1,0 +1,19 @@
+{
+  "name": "totp-generator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "./node_modules/.bin/esbuild index.js --bundle --outfile=bundle.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "qr-scanner": "^1.4.2",
+    "totp-generator": "^1.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0"
+  }
+}
