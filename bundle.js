@@ -1159,29 +1159,39 @@ break;case "inversionMode":switch(c){case "original":Y="dontInvert";break;case "
       const li = document.createElement("li");
       const totp = generateTotp(parsedCred.secret);
       const expiredTime = totp.expires;
-      let secondsLeft = Math.ceil(Math.abs(expiredTime - (/* @__PURE__ */ new Date()).getTime()) / 1e3) - 1;
+      let secondsLeft = Math.ceil(Math.abs(expiredTime - (/* @__PURE__ */ new Date()).getTime()) / 1e3);
+      const period = parsedCred.period;
       const p = document.createElement("p");
       p.style.wordBreak = "break-all";
       p.innerText = parsedCred.name;
       p.setAttribute("class", "text-dark font-weight-bold text-center text-wrap");
       const row = document.createElement("div");
-      row.setAttribute("class", "row justify-content-center");
+      row.setAttribute("class", "row justify-content-between px-3");
       const textSecondsLeft = document.createElement("span");
       textSecondsLeft.style.marginRight = "10px";
       textSecondsLeft.style.paddingTop = "9px";
       textSecondsLeft.innerText = secondsLeft;
       textSecondsLeft.setAttribute("class", "badge badge-pill badge-secondary my-2 p-2");
+      const progress = document.createElement("div");
+      progress.setAttribute("class", "progress mb-2");
+      const childProgress = document.createElement("div");
+      childProgress.setAttribute("class", "progress-bar progress-bar-striped progress-bar-animated");
+      childProgress.setAttribute("role", "progressbar");
+      childProgress.setAttribute("aria-valuenow", secondsLeft);
+      childProgress.setAttribute("aria-valuemin", 0);
+      childProgress.setAttribute("aria-valuemax", period);
+      childProgress.style.width = `${secondsLeft / period * 100}%`;
+      progress.append(childProgress);
       const input = document.createElement("input");
       input.setAttribute("disabled", true);
       input.setAttribute("value", totp.otp);
-      input.style.width = "50%";
+      input.style.width = "60%";
       input.style.textAlign = "center";
       input.style.fontSize = "20px";
       input.setAttribute("class", "form-control");
       const buttonCopy = document.createElement("button");
       buttonCopy.style.width = "15%";
-      buttonCopy.style.marginLeft = "10px";
-      buttonCopy.innerText = "Copy";
+      buttonCopy.innerText = "\u{1F4D1}";
       buttonCopy.setAttribute("class", "btn btn-dark");
       buttonCopy.addEventListener("click", async () => {
         await navigator.clipboard.writeText(input.value);
@@ -1189,8 +1199,9 @@ break;case "inversionMode":switch(c){case "original":Y="dontInvert";break;case "
       });
       const buttonDelete = document.createElement("button");
       buttonDelete.style.width = "15%";
-      buttonDelete.style.marginLeft = "10px";
-      buttonDelete.innerText = "Delete";
+      buttonDelete.style.backgroundColor = "#ffbbc2";
+      buttonDelete.style.borderColor = "#ffbbc2";
+      buttonDelete.innerText = "\u{1F5D1}\uFE0F";
       buttonDelete.setAttribute("class", "btn btn-danger");
       buttonDelete.setAttribute("data-id", parsedCred.secret);
       buttonDelete.addEventListener("click", async () => {
@@ -1202,18 +1213,22 @@ break;case "inversionMode":switch(c){case "original":Y="dontInvert";break;case "
         }
       });
       setInterval(() => {
-        textSecondsLeft.innerText = secondsLeft--;
-        if (secondsLeft <= -1) {
+        const currentSecond = secondsLeft--;
+        childProgress.setAttribute("aria-valuenow", currentSecond);
+        childProgress.style.width = `${currentSecond / period * 100}%`;
+        if (secondsLeft <= 0) {
           const totp2 = generateTotp(parsedCred.secret);
-          input.setAttribute("value", totp2.otp);
+          setTimeout(() => {
+            input.setAttribute("value", totp2.otp);
+          }, 1e3);
           const newExpiredTime = totp2.expires;
-          secondsLeft = Math.ceil(Math.abs(newExpiredTime - (/* @__PURE__ */ new Date()).getTime()) / 1e3) - 1;
+          secondsLeft = Math.ceil(Math.abs(newExpiredTime - (/* @__PURE__ */ new Date()).getTime()) / 1e3);
         }
       }, 1e3);
       li.setAttribute("class", "list-group-item");
       li.append(p);
+      li.append(progress);
       li.append(row);
-      row.append(textSecondsLeft);
       row.append(input);
       row.append(buttonCopy);
       row.append(buttonDelete);
