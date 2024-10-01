@@ -10,14 +10,25 @@ function generateTotp(secret) {
 document.getElementById('insert-credential').addEventListener('click', async () => {
     const qrCodeInput = document.getElementById('qr-code-input')
 
-    const qr = await QrScanner.scanImage(qrCodeInput.files[0])
-    const urlStructure = qr.replace('otpauth://totp/', '').split('?')
-    const credential = Object.fromEntries(new URLSearchParams(urlStructure[1]).entries())
-    credential.name = decodeURIComponent(urlStructure[0])
+    try {
+        let qr = await QrScanner.scanImage(qrCodeInput.files[0])
+        if (! qr.includes('otpauth://totp/')) {
+            alert('invalid 2FA QR Code')
+            return
+        }
 
-    localStorage.setItem(`cred_${credential.secret}`, JSON.stringify(credential))
+        const urlStructure = qr.replace('otpauth://totp/', '').split('?')
+        const credential = Object.fromEntries(new URLSearchParams(urlStructure[1]).entries())
+        credential.name = decodeURIComponent(urlStructure[0])
 
-    fetchAllCreds()
+        localStorage.setItem(`cred_${credential.secret}`, JSON.stringify(credential))
+
+        fetchAllCreds()
+
+    } catch (error) {
+        alert('invalid 2FA QR Code')
+        return
+    }
 })
 
 document.getElementById('delete-all-credentials').addEventListener('click', () => {
